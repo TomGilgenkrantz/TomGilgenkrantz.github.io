@@ -347,11 +347,38 @@
         }
 
         /* BIVOUACS */
-        .bivouacs-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 1.5rem;
+        .bivouacs-carousel {
+            position: relative;
             margin-top: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .carousel-btn {
+            flex-shrink: 0;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            border: 1px solid var(--border);
+            background: var(--white);
+            color: var(--black);
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s ease, border-color 0.2s ease;
+        }
+
+        .carousel-btn:hover {
+            background: var(--paper);
+            border-color: var(--gray);
+        }
+
+        .carousel-track {
+            flex: 1;
+            overflow: hidden;
         }
 
         .bivouac-card {
@@ -359,13 +386,8 @@
             border: 1px solid var(--border);
             border-radius: 4px;
             overflow: hidden;
-            transition: transform 0.25s ease-out;
-            will-change: transform;
-        }
-
-        .bivouac-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 12px 40px rgba(0,0,0,0.08);
+            max-width: 700px;
+            margin: 0 auto;
         }
 
         .bivouac-photos {
@@ -375,6 +397,7 @@
             gap: 4px;
             scrollbar-width: thin;
             scrollbar-color: var(--border) transparent;
+            height: 320px;
         }
 
         .bivouac-photos::-webkit-scrollbar {
@@ -393,22 +416,17 @@
         .bivouac-photos img {
             flex: 0 0 auto;
             width: calc((100% - 8px) / 3);
-            aspect-ratio: 9 / 16;
+            height: 100%;
             object-fit: cover;
             scroll-snap-align: start;
             display: block;
-            filter: grayscale(15%);
-            transition: filter 0.3s;
             cursor: pointer;
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: crisp-edges;
         }
 
         .bivouac-photos.single img {
             width: 100%;
-            aspect-ratio: 16 / 9;
-        }
-
-        .bivouac-photos img:hover {
-            filter: grayscale(0%);
         }
 
         .bivouac-card .no-photo {
@@ -423,11 +441,11 @@
         }
 
         .bivouac-card .card-body {
-            padding: 1.3rem;
+            padding: 1.5rem;
         }
 
         .bivouac-card .card-body h3 {
-            font-size: 1rem;
+            font-size: 1.1rem;
             margin-bottom: 0.3rem;
             font-weight: 700;
             color: var(--black);
@@ -435,7 +453,7 @@
 
         .bivouac-card .card-body p {
             color: var(--gray);
-            font-size: 0.85rem;
+            font-size: 0.88rem;
         }
 
         .bivouac-card .card-body .date {
@@ -445,6 +463,15 @@
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 1px;
+        }
+
+        .carousel-counter {
+            text-align: center;
+            margin-top: 1rem;
+            font-size: 0.8rem;
+            color: var(--light-gray);
+            font-weight: 500;
+            letter-spacing: 0.5px;
         }
 
         /* MATÉRIEL */
@@ -482,13 +509,11 @@
             max-width: 120px;
             aspect-ratio: 1;
             object-fit: contain;
-            transition: transform 0.3s ease, filter 0.3s ease;
-            filter: drop-shadow(0 0 0px transparent);
+            transition: transform 0.3s ease;
         }
 
         .gear-item:hover img {
             transform: translateY(-2px) scale(1.03);
-            filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.12));
         }
 
         .gear-item span {
@@ -601,8 +626,9 @@
                 gap: 2.5rem;
             }
 
-            .bivouacs-grid {
-                grid-template-columns: 1fr;
+            .carousel-btn {
+                width: 36px;
+                height: 36px;
             }
 
             section {
@@ -898,7 +924,7 @@
                     }
                 }
             });
-        });
+        }, { passive: true });
 
         // ===================== SCROLL ANIMATIONS =====================
         const observer = new IntersectionObserver((entries) => {
@@ -993,6 +1019,49 @@
             document.getElementById('objectifsContent').innerHTML = html;
         }
 
+        let bivouacIndex = 0;
+        let bivouacData = [];
+
+        function renderBivouacCard(index) {
+            const row = bivouacData[index];
+            const date = row['Date'] || '';
+            const lieu = row['Lieu'] || '';
+            const description = row['Description'] || '';
+            const photos = ['Photo1','Photo2','Photo3'].map(k => row[k] || '').filter(p => p);
+
+            let cardHtml = `<div class="bivouac-card">`;
+            if (photos.length > 0) {
+                const cls = photos.length === 1 ? 'bivouac-photos single' : 'bivouac-photos';
+                cardHtml += `<div class="${cls}">`;
+                photos.forEach(p => {
+                    cardHtml += `<img src="${escapeHtml(p)}" alt="${escapeHtml(String(lieu))}" onclick="openLightbox('${escapeAttr(p)}')" onerror="this.style.display='none'">`;
+                });
+                cardHtml += `</div>`;
+            } else {
+                cardHtml += `<div class="no-photo">Pas de photo</div>`;
+            }
+            cardHtml += `
+                <div class="card-body">
+                    <div class="date">${escapeHtml(String(date))}</div>
+                    <h3>${escapeHtml(String(lieu))}</h3>
+                    <p>${escapeHtml(String(description))}</p>
+                </div>
+            </div>`;
+
+            document.querySelector('.carousel-track').innerHTML = cardHtml;
+            document.querySelector('.carousel-counter').textContent = `${index + 1} / ${bivouacData.length}`;
+        }
+
+        function bivouacPrev() {
+            bivouacIndex = (bivouacIndex - 1 + bivouacData.length) % bivouacData.length;
+            renderBivouacCard(bivouacIndex);
+        }
+
+        function bivouacNext() {
+            bivouacIndex = (bivouacIndex + 1) % bivouacData.length;
+            renderBivouacCard(bivouacIndex);
+        }
+
         function renderBivouacs(data) {
             if (data.length === 0) {
                 document.getElementById('bivouacsContent').innerHTML = '<div class="empty-state"><p>Aucun bivouac trouvé.</p></div>';
@@ -1000,35 +1069,19 @@
             }
 
             document.getElementById('stat-bivouacs').textContent = data.length;
+            bivouacData = data;
+            bivouacIndex = 0;
 
-            let html = '<div class="bivouacs-grid">';
-            data.forEach(row => {
-                const date = row['Date'] || '';
-                const lieu = row['Lieu'] || '';
-                const description = row['Description'] || '';
-                const photos = ['Photo1','Photo2','Photo3'].map(k => row[k] || '').filter(p => p);
-
-                html += `<div class="bivouac-card">`;
-                if (photos.length > 0) {
-                    const cls = photos.length === 1 ? 'bivouac-photos single' : 'bivouac-photos';
-                    html += `<div class="${cls}">`;
-                    photos.forEach(p => {
-                        html += `<img src="${escapeHtml(p)}" alt="${escapeHtml(String(lieu))}" onclick="openLightbox('${escapeAttr(p)}')" loading="lazy" onerror="this.style.display='none'">`;
-                    });
-                    html += `</div>`;
-                } else {
-                    html += `<div class="no-photo">Pas de photo</div>`;
-                }
-                html += `
-                    <div class="card-body">
-                        <div class="date">${escapeHtml(String(date))}</div>
-                        <h3>${escapeHtml(String(lieu))}</h3>
-                        <p>${escapeHtml(String(description))}</p>
-                    </div>
-                </div>`;
-            });
-            html += '</div>';
+            let html = `
+                <div class="bivouacs-carousel">
+                    <button class="carousel-btn" id="carouselPrev" onclick="bivouacPrev()" aria-label="Précédent">&#8592;</button>
+                    <div class="carousel-track"></div>
+                    <button class="carousel-btn" id="carouselNext" onclick="bivouacNext()" aria-label="Suivant">&#8594;</button>
+                </div>
+                <div class="carousel-counter"></div>
+            `;
             document.getElementById('bivouacsContent').innerHTML = html;
+            renderBivouacCard(0);
         }
 
         // ===================== AUTO-LOAD ON PAGE INIT =====================
