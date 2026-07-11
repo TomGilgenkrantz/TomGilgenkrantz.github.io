@@ -253,6 +253,30 @@
             font-weight: 500;
         }
 
+        /* AMBASSADEUR */
+        .ambassadeur-content {
+            display: flex;
+            align-items: center;
+            gap: 3rem;
+        }
+
+        .ambassadeur-logo-wrap {
+            flex: 0 0 220px;
+        }
+
+        .ambassadeur-logo {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .ambassadeur-text p {
+            color: var(--gray);
+            font-size: 1rem;
+            font-weight: 400;
+            text-align: justify;
+        }
+
 
 
         /* TABLES */
@@ -689,6 +713,17 @@
                 gap: 2.5rem;
             }
 
+            .ambassadeur-content {
+                flex-direction: column;
+                text-align: center;
+                gap: 1.5rem;
+            }
+
+            .ambassadeur-logo-wrap {
+                flex: 0 0 auto;
+                max-width: 180px;
+            }
+
             .contact-content {
                 grid-template-columns: 1fr;
                 gap: 2.5rem;
@@ -758,6 +793,7 @@
         <div class="nav-container">
             <ul id="navMenu">
                 <li><a href="#about">À propos</a></li>
+                <li><a href="#ambassadeur">Ambassadeur</a></li>
                 <li><a href="#palmares">Palmarès</a></li>
                 <li><a href="#objectifs">Objectifs</a></li>
                 <li><a href="#bivouacs">Bivouacs</a></li>
@@ -821,6 +857,25 @@
             <div class="stat-card">
                 <div class="number" id="stat-bivouacs">—</div>
                 <div class="label">Bivouacs</div>
+            </div>
+        </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- AMBASSADEUR -->
+    <section id="ambassadeur">
+        <div class="section-header fade-in">
+            <h2>Ambassadeur</h2>
+        </div>
+        <div class="ambassadeur-content fade-in">
+            <div class="ambassadeur-logo-wrap">
+                <img src="Images/Autres/logoArthritis.png" alt="Fondation Arthritis" class="ambassadeur-logo">
+            </div>
+            <div class="ambassadeur-text">
+                <p>
+                    Depuis mon diagnostic, je suis fier d'être ambassadeur de la Fondation Arthritis, qui finance la recherche sur les maladies rhumatismales et inflammatoires. À travers mes courses et mes projets en montagne, je souhaite sensibiliser au quotidien avec la maladie et faire connaître ces pathologies encore trop méconnues.
+                </p>
             </div>
         </div>
     </section>
